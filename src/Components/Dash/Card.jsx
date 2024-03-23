@@ -1,10 +1,13 @@
 import React from 'react'
 
 const Card = (props) => {
+  function handlePost(){
+    window.location.href = "./event/"+props.id;
+  }
   return (
-    <div className="rounded-lg border bg-card text-card-foreground shadow-sm max-w-[370px]" data-v0-t="card">
+    <div className="rounded-lg border bg-card text-card-foreground shadow-sm max-w-[370px] cursor-pointer" data-v0-t="card" onClick = {handlePost}>
         <div className="p-6 flex flex-row items-center justify-between pb-2 space-y-0">
-          <h3 className="whitespace-nowrap tracking-tight text-sm font-medium">{props.when}</h3>
+          <h3 className="whitespace-nowrap tracking-tight text-sm font-medium">{props.status}</h3>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="24"
@@ -35,16 +38,16 @@ const Card = (props) => {
             alt="Upcoming event"
             style={{aspectRatio: '200 / 100', objectFit: 'cover'}}
           />
-          <p className="text-sm font-medium">Conference 2024</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">25th April, 2024 - 10:00 AM</p>
+          <p className="text-sm font-medium">{props.name}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">{props.date} - {props.time}</p>
         </div>
         <div className="items-center p-6 flex gap-2">
           <button className="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 rounded-md px-3">
             Details
           </button>
-          <button className="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 rounded-md px-3">
+          {/* <button className="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 rounded-md px-3">
             Edit
-          </button>
+          </button> */}
         </div>
       </div>
   )

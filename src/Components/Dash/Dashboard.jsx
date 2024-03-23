@@ -1,10 +1,79 @@
-import React from 'react'
+import React,{useState, useEffect} from 'react'
+import { onAuthStateChanged } from 'firebase/auth';
 import Card from './Card'
+import { auth, db } from '../../Firebase/config';
+import { onValue, ref } from "firebase/database";
+import NewEvent from '../NewEvent/NewEvent';
 
 const Dashboard = () => {
+
+  const [events, setEvents] = useState([]);
+
+  const [name, setName] = useState("");
+  const [firstLetter, setFirstLetter] = useState("");
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // User is signed in
+        console.log("User signed in")
+        const displayName = user.displayName; // Retrieve the display name
+        console.log(displayName);
+        setName(displayName);
+        setFirstLetter(displayName[0]);
+
+        const fetchEvents = async () => {
+          try {
+            const eventsRef = ref(db,"events")
+            onValue(eventsRef, (snapshot) => {
+              const eventData = snapshot.val();
+              if (eventData) {
+                // Convert eventData object into an array of events
+                const eventList = Object.keys(eventData).map((eventId) => ({
+                  id: eventId,
+                  ...eventData[eventId]
+                }));
+                setEvents(eventList);
+                console.log(events)
+              } else {
+                console.log('No events found.');
+              }
+            });
+          } catch (error) {
+            console.error('Error fetching events:', error);
+          }
+        };
+    
+        fetchEvents();
+        
+
+
+        // return <Navigate to="/dashboard" />
+        // navigate('/dashboard');
+        // Navigate to the dashboard page
+      } else {
+        console.log("User is not signed in")
+        // No user is signed in
+      }
+    });
+
+    return () => {
+      unsubscribe();
+      // db.ref('events').off();
+    } // Cleanup function
+  }, []);
+
+
+
+
   return (
 
-    <div className='w-full h-full flex items-center justify-center'>
+
+    <div className='w-full h-full flex items-center justify-center bg-white'>
+
+    {/* <NewEvent /> */}
+
+
       <div className="flex flex-col w-full h-full">
   <header className="flex items-center h-16 px-4 border-b shrink-0 md:px-6">
     <nav className="flex-col hidden gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
@@ -25,7 +94,7 @@ const Dashboard = () => {
           <path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"></path>
           <path d="M12 3v6"></path>
         </svg>
-        <span className="sr-only">Acme Inc</span>
+        <span className="sr-only">Unieve</span>
       </a>
       <a className="text-gray-500 dark:text-gray-400" href="#">
         Upcoming
@@ -38,7 +107,8 @@ const Dashboard = () => {
       </a>
     </nav>
     <div className="flex items-center w-full gap-4 md:ml-auto md:gap-2 lg:gap-4">
-      <form className="flex-1 ml-auto sm:flex-initial">
+      <form className="flex-1 flex-row ml-auto sm:flex-initial">
+
         <div className="relative">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -62,15 +132,13 @@ const Dashboard = () => {
           />
         </div>
       </form>
-      <button className="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 w-10 rounded-full">
-        <img
-          src="/placeholder.svg"
-          width="32"
-          height="32"
-          className="rounded-full"
-          alt="Avatar"
-          style={{aspectRatio: '32 / 32', objectFit: 'cover'}}
-        />
+
+      <button className="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 p-3 rounded-md bg-black text-white" onClick={()=>{window.location.href = "./addEvent"}}>
+        Add Event
+      </button>
+
+      <button className="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 w-10 rounded-full bg-[gainsboro]">
+        {firstLetter}
         <span className="sr-only">Toggle user menu</span>
       </button>
     </div>
@@ -79,9 +147,16 @@ const Dashboard = () => {
 
 
   <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-10 overflow-y-scroll">
+
     <div className="grid gap-4 md:grid-cols-4">
 
-      <Card url="https://wallpapercave.com/wp/wp7488226.jpg" when="Ongoing" />
+    {events.map((event) => (
+        <Card id={event.id} url = {event.imgURL} status={event.status} name={event.name} date={event.date} time={event.time} />
+      ))}
+
+
+
+      {/* <Card url="https://wallpapercave.com/wp/wp7488226.jpg" status="Ongoing" date="24th April, 2024" time="10:00 AM" name="GameDev Conf. 2024" />
       <Card url="https://wallpapercave.com/wp/wp7488226.jpg" />
       <Card url="https://wallpapercave.com/wp/wp7488226.jpg" />
       <Card url="https://wallpapercave.com/wp/wp7488226.jpg" />
@@ -94,12 +169,12 @@ const Dashboard = () => {
       <Card url="https://wallpapercave.com/wp/wp7488226.jpg" />
       <Card url="https://wallpapercave.com/wp/wp7488226.jpg" />
       <Card url="https://wallpapercave.com/wp/wp7488226.jpg" />
-      <Card url="https://wallpapercave.com/wp/wp7488226.jpg" />
+      <Card url="https://wallpapercave.com/wp/wp7488226.jpg" /> */}
       
 
 
 
-      <div className="rounded-lg border bg-card text-card-foreground shadow-sm max-w-[370px]" data-v0-t="card">
+      {/* <div className="rounded-lg border bg-card text-card-foreground shadow-sm max-w-[370px]" data-v0-t="card">
         <div className="p-6 flex flex-row items-center justify-between pb-2 space-y-0">
           <h3 className="whitespace-nowrap tracking-tight text-sm font-medium">Ongoing</h3>
           <svg
@@ -139,7 +214,7 @@ const Dashboard = () => {
             Details
           </button>
         </div>
-      </div>
+      </div> */}
 
 
     </div>
